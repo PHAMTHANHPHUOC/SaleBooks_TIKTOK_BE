@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kích hoạt tài khoản</title>
+    <style>
+      body {
+        background: #f4f6fb;
+        font-family: "Segoe UI", "Lato", Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 480px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        padding: 32px 24px 24px 24px;
+      }
+      .logo {
+        display: block;
+        margin: 0 auto 16px auto;
+        width: 64px;
+        height: 64px;
+      }
+      h1 {
+        color: #1a237e;
+        text-align: center;
+        margin-bottom: 8px;
+        font-size: 2rem;
+        font-weight: 700;
+      }
+      .greeting {
+        color: #333;
+        text-align: center;
+        font-size: 1.1rem;
+        margin-bottom: 24px;
+      }
+      .message {
+        color: #444;
+        font-size: 1rem;
+        margin-bottom: 32px;
+        text-align: center;
+      }
+      .btn {
+        display: block;
+        width: 100%;
+        background: linear-gradient(90deg, #ff9800, #ffb74d);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        padding: 14px 0;
+        border-radius: 6px;
+        text-align: center;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.08);
+        transition: background 0.2s;
+      }
+      .btn:hover {
+        background: linear-gradient(90deg, #fb8c00, #ffa726);
+      }
+      .link {
+        display: block;
+        word-break: break-all;
+        color: #ff9800;
+        text-align: center;
+        margin-bottom: 24px;
+        font-size: 0.98rem;
+      }
+      .footer {
+        color: #888;
+        font-size: 0.95rem;
+        text-align: center;
+        margin-top: 16px;
+      }
+      .footer strong {
+        color: #1a237e;
+      }
+      @media (max-width: 600px) {
+        .container {
+          padding: 18px 4vw 18px 4vw;
+        }
+        h1 {
+          font-size: 1.4rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+        alt="TalkSpace"
+        class="logo"
+      />
+      <h1>Kích hoạt tài khoản</h1>
+      <div class="greeting">Xin chào <strong>{{ name }}</strong>,</div>
+      <div class="message">
+        Cảm ơn bạn đã đăng ký tài khoản tại <strong>TalkSpace</strong>.<br />
+        Để hoàn tất quá trình đăng ký, vui lòng nhấn vào nút bên dưới để kích
+        hoạt tài khoản của bạn.
+      </div>
+      <a
+        href="http://localhost:5173/kich-hoat-tai-khoan/{{ hash_active }}"
+        class="btn"
+        target="_blank"
+      >
+        KÍCH HOẠT TÀI KHOẢN
+      </a>
+      <div class="link">
+        Nếu nút không hoạt động, hãy sao chép và dán liên kết sau vào trình
+        duyệt:<br />
+        <a
+          href="http://localhost:5173/kich-hoat-tai-khoan/{{ hash_active }}"
+          target="_blank"
+        >
+          http://localhost:5173/kich-hoat-tai-khoan/{{ hash_active }}
+        </a>
+      </div>
+      <div class="footer">
+        Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ:
+        <strong>thanhphuocj3@gmail.com</strong><br />
+        <em>Đây là email tự động, vui lòng không trả lời lại email này.</em>
+        <br /><br />
+        Trân trọng,<br />
+        <strong>TalkSpace Team</strong>
+      </div>
+    </div>
+  </body>
+</html>
