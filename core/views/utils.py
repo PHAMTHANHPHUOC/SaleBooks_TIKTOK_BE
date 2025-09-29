@@ -41,12 +41,12 @@ def update_visit_counter(request: HttpRequest, page_name='homepage'):
         defaults={
             'total_visits': 0,
             'today_visits': 0,
-            'last_visit_date': timezone.now().date()
+            'last_visit_date': timezone.localtime(timezone.now()).date()
         }
     )
     
     # Kiểm tra ngày mới
-    today = timezone.now().date()
+    today = timezone.localtime(timezone.now()).date()
     if counter.last_visit_date < today:
         counter.today_visits = 0
         counter.last_visit_date = today
@@ -96,8 +96,8 @@ def update_visit_counter(request: HttpRequest, page_name='homepage'):
 
 def calculate_growth_rate(page_name, period):
     """Tính tỷ lệ tăng trưởng"""
-    from datetime import datetime, timedelta
-    now = datetime.now()
+    from datetime import timedelta
+    now = timezone.localtime(timezone.now())
     
     if period == 'day':
         current_start = now.date()
@@ -147,43 +147,43 @@ def calculate_growth_rate(page_name, period):
     growth = ((current_count - previous_count) / previous_count) * 100
     return round(growth, 1)
 def get_visit_stats(page_name='homepage'):
-    """Lấy thống kê visit"""
     try:
         counter = VisitCounter.objects.get(page_name=page_name)
-        
-        
-        # Force refresh từ DB
         counter.refresh_from_db()
-        
-        # Thống kê tuần này
-        from datetime import datetime, timedelta
-        week_start = timezone.now().date() - timedelta(days=timezone.now().weekday())
+        now = timezone.localtime(timezone.now())  # Giờ Việt Nam
+
+        # Tính mốc thời gian local
+        week_start_local = now.date() - timedelta(days=now.weekday())
+        month_start_local = now.replace(day=1).date()
+        today_local = now.date()
+
+        # Chuyển về UTC để filter
+        week_start_utc = timezone.make_aware(datetime.combine(week_start_local, datetime.min.time())).astimezone(timezone.utc)
+        month_start_utc = timezone.make_aware(datetime.combine(month_start_local, datetime.min.time())).astimezone(timezone.utc)
+        today_start_utc = timezone.make_aware(datetime.combine(today_local, datetime.min.time())).astimezone(timezone.utc)
+        today_end_utc = timezone.make_aware(datetime.combine(today_local, datetime.max.time())).astimezone(timezone.utc)
+
         week_visits = VisitLog.objects.filter(
             page_visited=page_name,
-            visit_time__date__gte=week_start
+            visit_time__gte=week_start_utc
         ).count()
-        
-        # Thống kê tháng này
-        month_start = timezone.now().replace(day=1).date()
         month_visits = VisitLog.objects.filter(
             page_visited=page_name,
-            visit_time__date__gte=month_start
+            visit_time__gte=month_start_utc
         ).count()
-        
-        # Unique visitors hôm nay (theo IP)
-        today = timezone.now().date()
         unique_today = VisitLog.objects.filter(
             page_visited=page_name,
-            visit_time__date=today
+            visit_time__gte=today_start_utc,
+            visit_time__lte=today_end_utc
         ).values('ip_address').distinct().count()
-        
+
         return {
             'total_visits': counter.total_visits,
             'today_visits': counter.today_visits,
             'week_visits': week_visits,
             'month_visits': month_visits,
             'unique_today': unique_today,
-            'last_update': counter.updated_at,
+            'last_update': timezone.localtime(counter.updated_at).isoformat(),
         }
     except VisitCounter.DoesNotExist:
         return {
@@ -206,12 +206,12 @@ def update_visit_counter_from_data(page_name):
         defaults={
             'total_visits': 0,
             'today_visits': 0,
-            'last_visit_date': timezone.now().date()
+            'last_visit_date': timezone.localtime(timezone.now()).date()
         }
     )
     
     # Kiểm tra ngày mới
-    today = timezone.now().date()
+    today = timezone.localtime(timezone.now()).date()
     if counter.last_visit_date < today:
         counter.today_visits = 0
         counter.last_visit_date = today
@@ -226,7 +226,7 @@ def update_visit_counter_from_data(page_name):
 def get_country_stats(page_name):
     """Lấy thống kê theo quốc gia cho các khoảng thời gian"""
     from django.utils import timezone
-    now = timezone.now()
+    now = timezone.localtime(timezone.now())
     
     def get_period_stats(period):
         if period == 'today':
@@ -266,3 +266,5 @@ def get_country_stats(page_name):
         'month': get_period_stats('month'),
         'all': get_period_stats('all')
     }
+    
+

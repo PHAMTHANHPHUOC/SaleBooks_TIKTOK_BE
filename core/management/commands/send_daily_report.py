@@ -98,7 +98,7 @@ class Command(BaseCommand):
                 timeout=30
             )
             
-            if response.status_code == 200:
+            if response.status_code in (200,202):
                 self.stdout.write(
                     self.style.SUCCESS('✅ Báo cáo đã được gửi thành công đến Microsoft Teams!')
                 )

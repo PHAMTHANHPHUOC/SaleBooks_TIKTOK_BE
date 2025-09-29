@@ -9,8 +9,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
 import traceback
+from django.db.models.functions import TruncDate
+from django.utils import timezone
+from django.conf import settings 
+import pytz
+vn_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+now = timezone.now().astimezone(vn_tz)
 def homepage(request):
     """API tính lượt truy cập cho trang frontend http://localhost:5173/"""
+    now = timezone.now().astimezone(vn_tz)
     counter = update_visit_counter(request, 'frontend_home')
     stats = get_visit_stats('frontend_home')
     return JsonResponse(stats)
@@ -19,23 +26,27 @@ def get_visit_count_api(request):
     API GET /api/visits/ - Trả về đầy đủ dữ liệu cho frontend Vue.js
     Cần include_countries=true để có dữ liệu country_stats
     """
+    now = timezone.now().astimezone(vn_tz)
     page_name = request.GET.get('page', 'home')
     include_countries = request.GET.get('include_countries', 'false').lower() == 'true'
     
     stats = get_visit_stats(page_name)
-    
+   
     # Thống kê theo giờ (24h qua) 
     hourly_stats = []
-    now = datetime.now()
-    for i in range(24):
-        hour_start = now - timedelta(hours=i+1)
-        hour_end = now - timedelta(hours=i)
+    today_local = now.date()
+    for hour in range(24):
+        hour_start_local = vn_tz.localize(datetime.combine(today_local, datetime.min.time()) + timedelta(hours=hour))
+        hour_end_local = hour_start_local + timedelta(hours=1)
+        hour_start_utc = hour_start_local.astimezone(timezone.utc)
+        hour_end_utc = hour_end_local.astimezone(timezone.utc)
         count = VisitLog.objects.filter(
             page_visited=page_name,
-            visit_time__range=[hour_start, hour_end]
+            visit_time__gte=hour_start_utc,
+            visit_time__lt=hour_end_utc
         ).count()
         hourly_stats.append({
-            'hour': hour_start.strftime('%H:00'),
+            'hour': hour_start_local.strftime('%H:00'),
             'visits': count
         })
     
@@ -43,9 +54,12 @@ def get_visit_count_api(request):
     daily_stats = []
     for i in range(7):
         date_check = now.date() - timedelta(days=i)
+        start_utc = timezone.make_aware(datetime.combine(date_check, datetime.min.time())).astimezone(timezone.utc)
+        end_utc = timezone.make_aware(datetime.combine(date_check, datetime.max.time())).astimezone(timezone.utc)
         count = VisitLog.objects.filter(
             page_visited=page_name,
-            visit_time__date=date_check
+            visit_time__gte=start_utc,
+            visit_time__lte=end_utc
         ).count()
         daily_stats.append({
             'date': date_check.strftime('%d/%m'),
@@ -53,10 +67,18 @@ def get_visit_count_api(request):
         })
     
     # Unique visitors (theo IP) hôm nay
+    
+    
+    today_local = now.date()
+    today_start_utc = timezone.make_aware(datetime.combine(today_local, datetime.min.time())).astimezone(timezone.utc)
+    today_end_utc = timezone.make_aware(datetime.combine(today_local, datetime.max.time())).astimezone(timezone.utc)
     unique_today = VisitLog.objects.filter(
         page_visited=page_name,
-        visit_time__date=now.date()
-    ).values('ip_address').distinct().count()
+        visit_time__gte=today_start_utc,
+        visit_time__lte=today_end_utc
+    ).values('ip_address', 'user_agent').distinct().count()
+    # ).values('ip_address').distinct().count()
+    
     
     # Kết quả cơ bản
     result = {
@@ -66,7 +88,7 @@ def get_visit_count_api(request):
         'week_visits': int(stats.get('week_visits', 0)),
         'month_visits': int(stats.get('month_visits', 0)),
         'unique_today': unique_today,
-        'last_update': stats.get('last_update').isoformat() if stats.get('last_update') else now.isoformat(),
+        'last_update': stats.get('last_update') if stats.get('last_update') else now.strftime('%H:%M:%S %d/%m/%Y'),
         
         # Dữ liệu charts
         'hourly_stats': list(reversed(hourly_stats[:24])),  # 24h, mới nhất sau
@@ -75,6 +97,7 @@ def get_visit_count_api(request):
         # Metadata
         'page_name': page_name,
         'server_time': now.isoformat(),
+
         'timezone': 'UTC+7',
         
         # Growth rates
@@ -151,7 +174,7 @@ def track_visit(request):
             'status': 'success',
             'message': 'Visit tracked successfully',
             'visit_id': visit_log.id,
-            'timestamp': visit_log.visit_time.isoformat()
+            'timestamp': visit_log.visit_time.astimezone(vn_tz).strftime('%H:%M:%S %d/%m/%Y')
         })
         
     except json.JSONDecodeError:
@@ -166,3 +189,4 @@ def track_visit(request):
             'status': 'error',
             'message': str(e)
         }, status=500)
+        

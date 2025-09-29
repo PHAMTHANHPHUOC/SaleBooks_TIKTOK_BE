@@ -49,7 +49,7 @@ class VisitLog(models.Model):
     @classmethod
     def get_stats_for_period(cls, period='today', page='homepage'):
         """Lấy thống kê theo khoảng thời gian"""
-        now = timezone.now()
+        now = timezone.localtime(timezone.now())
         
         if period == 'today':
             start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -84,7 +84,7 @@ class VisitLog(models.Model):
     @classmethod
     def get_hourly_stats(cls, page='homepage'):
         """Lấy thống kê theo giờ (24h qua)"""
-        now = timezone.now()
+        now = timezone.localtime(timezone.now())
         start_time = now - timedelta(hours=24)
         
         from django.db.models import Extract
@@ -101,7 +101,7 @@ class VisitLog(models.Model):
     @classmethod
     def get_daily_stats(cls, page='homepage'):
         """Lấy thống kê theo ngày (7 ngày qua)"""
-        now = timezone.now()
+        now = timezone.localtime(timezone.now())
         start_time = now - timedelta(days=7)
         
         from django.db.models import Extract
@@ -128,7 +128,7 @@ class VisitLog(models.Model):
     @classmethod
     def calculate_growth(cls, page='homepage'):
         """Tính toán tăng trưởng"""
-        now = timezone.now()
+        now = timezone.localtime(timezone.now())
         
         # Hôm nay vs hôm qua
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)

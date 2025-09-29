@@ -1,12 +1,18 @@
 import requests
 
 def call_api():
-    url = "http://192.168.1.28:8000/api/teams/send-report/"  # Đúng API cần gửi Teams
+    url = "https://tiktokapi.tinydaisycoloring.com/api/teams/send-report/"
+    headers = {
+        'Content-Type': 'application/json',
+    }
+
     try:
-        response = requests.post(url, timeout=10)  # POST, không phải GET
+        response = requests.post(url, json={}, headers=headers, timeout=10)
         response.raise_for_status()
-        print("API response:", response.status_code, response.text)
+        print(f"✅ API called successfully. Status: {response.status_code}")
+        print("Response:", response.text)
     except requests.exceptions.RequestException as e:
-        print("Request error:", e)
+        print(f"❌ Request failed: {e}")
     except Exception as e:
-        print("Unexpected error:", e)
+        print(f"❌ Unexpected error: {e}")
+

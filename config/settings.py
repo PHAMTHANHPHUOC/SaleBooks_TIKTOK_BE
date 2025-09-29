@@ -27,7 +27,8 @@ dotenv.load_dotenv(override=True)
 BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GEOIP_PATH = os.path.join(BASE_DIR, "geoip")
-
+TIME_ZONE = 'Asia/Ho_Chi_Minh'
+USE_I18N = True
 # Load environment variables explicitly from backend/.env and project root .env
 logger = logging.getLogger(__name__)
 def _load_env_file(path: str) -> None:
@@ -68,7 +69,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT =  '/var/www/media'
 
 # Application definition
 
@@ -132,8 +133,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'salebooks_link',               # Tên database trong Navicat
-        'USER': 'root',               # Tài khoản MySQL
+        'NAME': 'salebooks_link_tiktok',               # Tên database trong Navicat
+        'USER': 'salebook_user_tiktok',               # Tài khoản MySQL
         'PASSWORD': '123456',                 # Mật khẩu MySQL
         'HOST': '127.0.0.1',          # IP của máy MySQL (localhost)
         'PORT': '3306',               # Cổng MySQL (mặc định là 3306)
@@ -165,7 +166,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Ho_Chi_Minh'
 
 USE_I18N = True
 
@@ -173,17 +174,22 @@ USE_TZ = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://tiktokapi.tinydaisycoloring",
+    "https://store.tinydaisycoloring.com",
 ]
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "192.168.1.28"
+    "192.168.1.28",
+    'tiktokapi.tinydaisycoloring.com', 'store.tinydaisycoloring.com'
 ]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = '/var/www/static'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
